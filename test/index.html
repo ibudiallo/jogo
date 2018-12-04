@@ -1,0 +1,41 @@
+<!doctype html>
+<html>
+	<head>
+		<title>Jogo - JSON to golang converter</title>
+		<script src="sample.js"></script>
+		<script src="../src/jogo/jogo.js"></script>
+		<script src="../src/render/render.js"></script>
+		<link href="style.css" rel="stylesheet" type="text/css"/>
+<style>
+
+</style>
+	</head>
+	<body>
+		<header class="page-header">
+			<h1 class="page-header__title">Jogo</h1>
+			<p class="page-header__sub-title">Convert JSON to GO</p>
+		</header>
+		<section class="page-content">
+			<div class="container">
+				<div class="user-content">
+					<div class="form-ctrl">
+						<label>Variable Name:</label>
+						<input type="text" value="Generated" id="varname"/>
+						<button id="convBtn">Convert</button>
+					</div>
+					<textarea id="textarea" class="uc__text-box" placeholder="Paste your json here"></textarea>
+				</div>
+				<div class="user-content">
+					<div class="uc-window">
+						<div id="box" class="uc-window__preview" contenteditable="true"></div>
+					</div>
+				</div>
+			</div>
+		</section>
+	<script>
+		window.addEventListener("load",function() {
+			Render.init("web");	
+		},false);
+	</script>
+	</body>
+</html>
