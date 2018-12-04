@@ -10,29 +10,63 @@ var Render = {
 	convBtn: null,
 	container: [],
 	tabChar: "\t",
-	init: function(mode) {
+	form: null,
+
+	init: function( mode ) {
 		this.mode = mode || "cli";
-		this.box = document.getElementById("box")
-		this.varField = document.getElementById("varname");
-		this.textField = document.getElementById("textarea");
-		this.convBtn = document.getElementById("convBtn");
-		this.textField.value = JSON.stringify(sample,null,"  ");
+		this.box = document.getElementById( "box" )
+		this.varField = document.getElementById( "varname" );
+		this.textField = document.getElementById( "textarea" );
+		this.convBtn = document.getElementById( "convBtn" );
+		this.textField.value = JSON.stringify( sample, null,"  " );
 		this.convBtn.onclick = function() {
-			let c = Jogo.convert(Render.varField.value,Render.textField.value);
-			Render.display(c);
+			Render.update();
 		};
-		let c = Jogo.convert(this.varField.value,this.textField.value);
-		Render.display(c);
+		this.setUp();
+		Render.update();
 	},
 
-	display: function(containers) {
+	setUp: function() {
+		let opts = Jogo.opts;
+		this.form = document.getElementById("option-box")
+		this.form.tabs.value = opts.tabChar === "\t" ? "tab" : "space";
+		this.form.annotation.checked = opts.annotation;
+		this.form.omitempty.checked = opts.omitempty;
+		for( let i = 0, l = this.form.tabs.length; i < l; i++ ) {
+			this.form.tabs[ i ].onchange = function() {
+				Render.changeSettings();
+			};
+		}
+		this.form.annotation.onchange = function() {
+			Render.changeSettings();
+		};
+		this.form.omitempty.onchange = function() {
+			Render.changeSettings();
+		};
+	},
+
+	changeSettings: function() {
+		Jogo.opts = {
+			tabChar: this.form.tabs.value === "tab" ? "\t" : "    ",
+			annotation: this.form.annotation.checked,
+			omitempty: this.form.omitempty.checked
+		};
+		this.update();
+	},
+
+	update: function() {
+		let c = Jogo.convert( this.varField.value, this.textField.value );
+		this.display( c );
+	},
+
+	display: function( containers ) {
 		this.box.innerHTML = "";
-		for (let i = 0, l = containers.length; i < l; i++) {
-			let div = document.createElement("div");
-			div.id = "go-struct-"+i;
+		for ( let i = 0, l = containers.length; i < l; i++ ) {
+			let div = document.createElement( "div" );
+			div.id = "go-struct-" + i;
 			div.className = "go-struct";
-			div.innerHTML = containers[i];
-			this.box.appendChild(div);
+			div.innerHTML = containers[ i ];
+			this.box.appendChild( div );
 		}
 	}
 
@@ -40,8 +74,7 @@ var Render = {
 
 
 if ( typeof define === "function" && define.amd ) {
-	define(function() { return Render; });
-// Sizzle requires that there be a global window in Common-JS like environments
+	define( function() { return Render; } );
 } else if ( typeof module !== "undefined" && module.exports ) {
 	module.exports = Render;
 } else {

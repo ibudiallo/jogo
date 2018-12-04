@@ -8,7 +8,7 @@ let Jogo = {
 	container: [],
 	opts: {
 		tabChar: "\t",
-		annotations: true,
+		annotation: true,
 		omitempty: true,
 	},
 
@@ -190,7 +190,7 @@ let Jogo = {
 	},
 
 	annotate: function( name ){
-		if ( !this.opts.annotations ) {
+		if ( !this.opts.annotation ) {
 			return "";
 		}
 		let omit = this.opts.omitempty? ",omitempty" : "";
@@ -361,7 +361,6 @@ let Jogo = {
 
 if ( typeof define === "function" && define.amd ) {
 	define( function() { return Jogo; } );
-// Sizzle requires that there be a global window in Common-JS like environments
 } else if ( typeof module !== "undefined" && module.exports ) {
 	module.exports = Jogo;
 } else {
