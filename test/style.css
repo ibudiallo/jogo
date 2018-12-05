@@ -48,6 +48,7 @@ b,strong {font-weight:bold;}
 	padding: 12px;
 }
 .user-content {
+	position: relative;
 	width: 100%;
 	padding: 6px 6px;
 	margin: 0 6px;
@@ -82,7 +83,20 @@ b,strong {font-weight:bold;}
 	padding: 12px;
 	background-color: #fafafa;
 }
-
+.option-box {
+	display: none;
+	position: absolute;
+	box-sizing: border-box;
+	padding: 6px;
+	background-color: rgba(255,255,255,.9);
+	box-shadow: 0 2px 3px rgba(0,0,0,.16);
+	border-radius: 2px;
+	width: 100%;
+}
+.option-btn {
+	text-decoration: underline;
+	cursor: pointer;
+}
 
 .go-struct {
 	margin-bottom: 6px;

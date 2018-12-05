@@ -11,6 +11,8 @@ var Render = {
 	container: [],
 	tabChar: "\t",
 	form: null,
+	optionBtn: null,
+	option: { visible: false },
 
 	init: function( mode ) {
 		this.mode = mode || "cli";
@@ -18,6 +20,7 @@ var Render = {
 		this.varField = document.getElementById( "varname" );
 		this.textField = document.getElementById( "textarea" );
 		this.convBtn = document.getElementById( "convBtn" );
+		this.optionBtn = document.getElementById( "option-btn" );
 		this.textField.value = JSON.stringify( sample, null,"  " );
 		this.convBtn.onclick = function() {
 			Render.update();
@@ -28,6 +31,7 @@ var Render = {
 
 	setUp: function() {
 		let opts = Jogo.opts;
+		let that = this;
 		this.form = document.getElementById("option-box")
 		this.form.tabs.value = opts.tabChar === "\t" ? "tab" : "space";
 		this.form.annotation.checked = opts.annotation;
@@ -43,6 +47,14 @@ var Render = {
 		this.form.omitempty.onchange = function() {
 			Render.changeSettings();
 		};
+		this.optionBtn.onclick = function(){
+			that.toggleOptions();
+		};
+	},
+
+	toggleOptions: function(){
+		this.form.style.display = this.option.visible ? "" : "block";
+		this.option.visible = !this.option.visible;
 	},
 
 	changeSettings: function() {
