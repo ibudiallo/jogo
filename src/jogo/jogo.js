@@ -345,7 +345,6 @@ let Jogo = {
 				count++;
 			}
 		}
-		var a = this.groupFormat( str );
 		this.container.push( { name: name, content: str, hash: hash } );
 		return count;
 	},

@@ -77,11 +77,125 @@ var Render = {
 			let div = document.createElement( "div" );
 			div.id = "go-struct-" + i;
 			div.className = "go-struct";
-			div.innerHTML = containers[ i ];
+			let html = this.format( containers[ i ] );
+			// div.innerHTML = containers[ i ];
+			div.appendChild( html );
 			this.box.appendChild( div );
 		}
-	}
+	},
 
+	format: function( content ) {
+		let lines = content.split( "\n" );
+		let par = document.createElement( "div" );
+		let out = [];
+		let level = 0;
+		let maxLevel = 0;
+		par.className = "big-parent";
+		// par.appendChild( current );
+		for( let i = 0, l = lines.length; i < l; i++ ) {
+			let line = lines[ i ].trim();
+			if ( line[ line.length - 1] === "{" ) {
+				let g = document.createElement( "div" );
+				g.className = "group";
+				par.appendChild( g );
+				par = g;
+				let span = this.createLine( line, i, level );
+				par.appendChild( span );
+				level++;
+				maxLevel++;
+			} else if ( line[0] === "}" ) {
+				level--;
+				let span = this.createLine( line, i, level );
+				par.appendChild( span );
+				par = par.parentNode;
+			} else {
+				let span = this.createLine( line, i, level );
+				par.appendChild( span );
+			}
+		}
+		while(par.parentNode) {
+			par = par.parentNode;
+		}
+		this.paddling( par, maxLevel );
+		let all = par.getElementsByTagName( "*" );
+		let empt = document.createElement( "span" );
+		empt.className = "line empty";
+		empt.innerText = "\n";
+		par.appendChild( empt );
+		return par;
+	},
+
+	paddling: function ( par, max ) {
+		for( let i = 0; i < max; i++ ) {
+			let clName = "lvl-name-" + i;
+			let clType = "lvl-type-" + i;
+			let clAnno = "lvl-annot-" + i;
+			let names = par.getElementsByClassName( clName );
+			let types = par.getElementsByClassName( clType );
+			let annos = par.getElementsByClassName( clAnno );
+			let nameL = 0;
+			let typeL = 0;
+			let annoL = 0;
+			for ( let j = 0, l = names.length; j < l; j++ ) {
+				if ( nameL < names[ j ].innerText.length ) {
+					nameL = names[ j ].innerText.length;
+				}
+				if ( typeL < types[ j ].innerText.length ) {
+					typeL = types[ j ].innerText.length;
+				}
+				if ( annoL < annos[ j ].innerText.length ) {
+					annoL = annos[ j ].innerText.length;
+				}
+			}
+			for ( let j = 0, l = names.length; j < l; j++ ) {
+				names[ j ].innerText = names[ j ].innerText.padEnd( nameL );
+				types[ j ].innerText = types[ j ].innerText.padEnd( typeL );
+				annos[ j ].innerText = annos[ j ].innerText.padEnd( annoL );
+			}
+		}
+	},
+
+	createLine: function( line, lineNo, level ) {
+		let out = this.entityFormat( line, level )
+		var e = document.createElement( "span" );
+		e.setAttribute( "level", level );
+		e.className = "line";
+		e.id = "line-" + lineNo;
+		e.innerHTML = out;
+		return e;
+	},
+
+	entityFormat: function( line, level ) {
+		let bits = line.split( /\s/ );
+		let out = [];
+		switch( bits.length ) {
+			case 3:
+				out.push( "<span class='syntax-name lvl-name-" + level + "'>" + bits[ 0 ] + "</span>" );
+				out.push( "<span class='syntax-type lvl-type-" + level + "'>" + bits[ 1 ] + "</span>" );
+				out.push( "<span class='syntax-annot lvl-annot-" + level + "'>" + bits[ 2 ] + "</span>" );
+				break;
+			case 2:
+				out.push( "<span class='syntax-name'>" + bits[ 0 ] + "</span>" );
+				out.push( "<span class='syntax-annot'>" + bits[ 1 ] + "</span>" );
+				break;
+			case 1:
+				if ( bits[ 0 ] !== "}" ) {
+					out.push( "<span class='syntax-type'>" + bits[ 0 ] + "</span>" );
+					break;
+				}
+			default:
+				return this.tabit( level ) + line;
+		}
+		return this.tabit( level ) + out.join( " " );
+	},
+
+	tabit: function( count ) {
+		let str = "";
+		for( let i = 0; i < count; i++ ) {
+			str += this.tabChar;
+		}
+		return str;
+	}
 };
 
 

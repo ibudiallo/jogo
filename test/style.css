@@ -78,9 +78,15 @@ b,strong {font-weight:bold;}
 	overflow: auto;
 }
 .uc-window__preview {
+	padding: 12px;
+	background-color: #fafafa;
+}
+.line {
+	display:block;
 	white-space: pre;
 	font-family: monospace;
-	padding: 12px;
+}
+.line:hover {
 	background-color: #fafafa;
 }
 .option-box {
@@ -105,4 +111,15 @@ b,strong {font-weight:bold;}
 }
 .go-struct:hover {
 	background-color: #f0f0f0;
+}
+
+/** Syntax Highlight **/
+.syntax-name {
+	color: #000;
+}
+.syntax-type {
+	color: #F00;
+}
+.syntax-annot {
+	color: #06D;
 }
