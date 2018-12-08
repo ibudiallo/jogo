@@ -130,7 +130,6 @@ var Render = {
 
 	addLineNumbers: function( par ) {
 		let all = par.getElementsByClassName( "line" );
-		console.log(all)
 		for( let i = 0, l = all.length; i < l; i++ ) {
 			let s = all[ i ];
 			s.setAttribute( "line", i + 1 );
