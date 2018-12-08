@@ -63,6 +63,7 @@ var Render = {
 			annotation: this.form.annotation.checked,
 			omitempty: this.form.omitempty.checked
 		};
+		this.tabChar = Jogo.opts.tabChar;
 		this.update();
 	},
 
@@ -73,18 +74,21 @@ var Render = {
 
 	display: function( containers ) {
 		this.box.innerHTML = "";
+		let startLine = 0;
 		for ( let i = 0, l = containers.length; i < l; i++ ) {
 			let div = document.createElement( "div" );
 			div.id = "go-struct-" + i;
 			div.className = "go-struct";
-			let html = this.format( containers[ i ] );
+			let html = this.format( containers[ i ], startLine );
 			// div.innerHTML = containers[ i ];
+			startLine = containers[ i ].split( "\n" ).length;
 			div.appendChild( html );
 			this.box.appendChild( div );
 		}
+		this.addLineNumbers( this.box );
 	},
 
-	format: function( content ) {
+	format: function( content, lineNum ) {
 		let lines = content.split( "\n" );
 		let par = document.createElement( "div" );
 		let out = [];
@@ -99,17 +103,17 @@ var Render = {
 				g.className = "group";
 				par.appendChild( g );
 				par = g;
-				let span = this.createLine( line, i, level );
+				let span = this.createLine( line, i, level, lineNum );
 				par.appendChild( span );
 				level++;
 				maxLevel++;
 			} else if ( line[0] === "}" ) {
 				level--;
-				let span = this.createLine( line, i, level );
+				let span = this.createLine( line, i, level, lineNum );
 				par.appendChild( span );
 				par = par.parentNode;
 			} else {
-				let span = this.createLine( line, i, level );
+				let span = this.createLine( line, i, level, lineNum );
 				par.appendChild( span );
 			}
 		}
@@ -117,7 +121,6 @@ var Render = {
 			par = par.parentNode;
 		}
 		this.paddling( par, maxLevel );
-		let all = par.getElementsByTagName( "*" );
 		let empt = document.createElement( "span" );
 		empt.className = "line empty";
 		empt.innerText = "\n";
@@ -125,42 +128,21 @@ var Render = {
 		return par;
 	},
 
-	paddling: function ( par, max ) {
-		for( let i = 0; i < max; i++ ) {
-			let clName = "lvl-name-" + i;
-			let clType = "lvl-type-" + i;
-			let clAnno = "lvl-annot-" + i;
-			let names = par.getElementsByClassName( clName );
-			let types = par.getElementsByClassName( clType );
-			let annos = par.getElementsByClassName( clAnno );
-			let nameL = 0;
-			let typeL = 0;
-			let annoL = 0;
-			for ( let j = 0, l = names.length; j < l; j++ ) {
-				if ( nameL < names[ j ].innerText.length ) {
-					nameL = names[ j ].innerText.length;
-				}
-				if ( typeL < types[ j ].innerText.length ) {
-					typeL = types[ j ].innerText.length;
-				}
-				if ( annoL < annos[ j ].innerText.length ) {
-					annoL = annos[ j ].innerText.length;
-				}
-			}
-			for ( let j = 0, l = names.length; j < l; j++ ) {
-				names[ j ].innerText = names[ j ].innerText.padEnd( nameL );
-				types[ j ].innerText = types[ j ].innerText.padEnd( typeL );
-				annos[ j ].innerText = annos[ j ].innerText.padEnd( annoL );
-			}
+	addLineNumbers: function( par ) {
+		let all = par.getElementsByClassName( "line" );
+		console.log(all)
+		for( let i = 0, l = all.length; i < l; i++ ) {
+			let s = all[ i ];
+			s.setAttribute( "line", i + 1 );
 		}
 	},
 
-	createLine: function( line, lineNo, level ) {
+	createLine: function( line, index, level, lineNum ) {
 		let out = this.entityFormat( line, level )
 		var e = document.createElement( "span" );
 		e.setAttribute( "level", level );
 		e.className = "line";
-		e.id = "line-" + lineNo;
+		e.id = "line-" + ( index + lineNum );
 		e.innerHTML = out;
 		return e;
 	},
@@ -187,6 +169,37 @@ var Render = {
 				return this.tabit( level ) + line;
 		}
 		return this.tabit( level ) + out.join( " " );
+	},
+
+	paddling: function ( par, max ) {
+		for( let i = 0; i <= max; i++ ) {
+			let clName = "lvl-name-" + i;
+			let clType = "lvl-type-" + i;
+			let clAnno = "lvl-annot-" + i;
+			let names = par.getElementsByClassName( clName );
+			let types = par.getElementsByClassName( clType );
+			let annos = par.getElementsByClassName( clAnno );
+			let nameL = 0;
+			let typeL = 0;
+			let annoL = 0;
+			for ( let j = 0, l = names.length; j < l; j++ ) {
+				if ( nameL < names[ j ].innerText.length ) {
+					nameL = names[ j ].innerText.length;
+				}
+				if ( typeL < types[ j ].innerText.length ) {
+					typeL = types[ j ].innerText.length;
+				}
+				if ( annoL < annos[ j ].innerText.length ) {
+					annoL = annos[ j ].innerText.length;
+				}
+			}
+			for ( let j = 0, l = names.length; j < l; j++ ) {
+				names[ j ].innerText = names[ j ].innerText.padEnd( nameL );
+				types[ j ].innerText = types[ j ].innerText.padEnd( typeL );
+				// May not be needed for annotations
+				// annos[ j ].innerText = annos[ j ].innerText.padEnd( annoL );
+			}
+		}
 	},
 
 	tabit: function( count ) {
