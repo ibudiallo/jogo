@@ -1,4 +1,5 @@
-(function ( window ) {
+(function ( ) {
+var root = this;
 let Jogo = {
 	goKeys: ["API", "ASCII", "CPU", "CSS", "DNS", "EOF", "GUID", "HTML", "HTTP",
 			"HTTPS", "ID", "IP", "JSON", "LHS", "QPS", "RAM", "RHS", "RPC", "SLA",
@@ -10,6 +11,7 @@ let Jogo = {
 		tabChar: "\t",
 		annotation: true,
 		omitempty: true,
+		newLine: "\n",
 	},
 
 	init: function( opts ) {
@@ -53,10 +55,10 @@ let Jogo = {
 
 	process: function( obj, name ) {
 		var contentName = "Content-" + Math.random(),
-			strOut = ("type {} struct {\n{" + contentName + "}\n}" ).replace( "{}" , name ),
+			strOut = ("type {} struct {" + this.opts.newLine + "{" + contentName + "}" + this.opts.newLine + "}" ).replace( "{}" , name ),
 			hash = this.getObjHash( obj );
 		var data = this.processObject( obj, name, 1 );
-		strOut = strOut.replace( "{" + contentName + "}", data.join( "\n" ) );
+		strOut = strOut.replace( "{" + contentName + "}", data.join( this.opts.newLine ) );
 		let total = this.addToContainer( name, strOut, hash );
 	},
 
@@ -79,9 +81,9 @@ let Jogo = {
 					continue;
 				}
 				let objContentName = "Content-" + Math.random();
-				let objOut = tabs + keyName + " struct {\n" + objContentName + "\n" + tabs + "} " + this.annotate( key );
+				let objOut = tabs + keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + tabs + "} " + this.annotate( key );
 				let data = this.processObject( elem, key, depth + 1 );
-				out = objOut.replace( objContentName, data.join( "\n" ) );
+				out = objOut.replace( objContentName, data.join( this.opts.newLine ) );
 				content.push( out );
 				continue;
 			}
@@ -118,7 +120,7 @@ let Jogo = {
 			return  this.getTabs( depth ) + keyName + " []interface{} " + annot;
 		}
 		let cName = "Content-" + Math.random();
-		let out = this.getTabs( depth ) + keyName +" []struct {\n" + cName + "\n" + this.getTabs( depth ) + "} " + annot;
+		let out = this.getTabs( depth ) + keyName +" []struct {" + this.opts.newLine + cName + this.opts.newLine + this.getTabs( depth ) + "} " + annot;
 		let data = this.processArray( list[ 0 ], "", depth + 1 );
 		out = out.replace( cName, data );
 		return out;
@@ -134,8 +136,8 @@ let Jogo = {
 		if ( data.length < 1 ) {
 			return this.getTabs( depth ) + keyName +" []interface{} " + annot
 		}
-		out = "type "+this.singular( keyName ) + " struct {\n" + objContentName + "\n}";
-		out = out.replace( objContentName, data.join( "\n" ) );
+		out = "type "+this.singular( keyName ) + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "}";
+		out = out.replace( objContentName, data.join( this.opts.newLine ) );
 		//out = this.groupFormat(out);
 		let hash = this.getObjHash( obj );
 		let total = this.addToContainer( keyName, out, hash );
@@ -216,7 +218,7 @@ let Jogo = {
 	},
 	// TODO: Not done yet
 	groupFormat: function( group ) {
-		let lines = group.split( '\n' );
+		let lines = group.split( this.opts.newLine );
 		let outLines = [];
 		let start = 0;
 		let isProcess = false;
@@ -269,7 +271,7 @@ let Jogo = {
 				}
 			}
 		}
-		return outLines.join( "\n" )
+		return outLines.join( this.opts.newLine )
 	},
 
 	_formatRange : function( group, from, to, pads, depth){
@@ -363,7 +365,7 @@ if ( typeof define === "function" && define.amd ) {
 } else if ( typeof module !== "undefined" && module.exports ) {
 	module.exports = Jogo;
 } else {
-	window.Jogo = Jogo;
+	root.Jogo = Jogo;
 }
 
-})( window );
+})();
