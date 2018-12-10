@@ -1,0 +1,57 @@
+{
+    "_id": "5c0eb220b5d259cedd562a23",
+    "index": 0,
+    "guid": "f3ba5455-3696-4ba3-9208-777acac1f20f",
+    "isActive": true,
+    "balance": "$2,931.05",
+    "picture": "http://placehold.it/32x32",
+    "age": 31,
+    "eyeColor": "brown",
+    "name": {
+      "first": "Mcconnell",
+      "last": "Booth"
+    },
+    "company": "DAIDO",
+    "email": "mcconnell.booth@daido.org",
+    "phone": "+1 (809) 519-3186",
+    "address": "428 Brooklyn Road, Elfrida, Mississippi, 6353",
+    "about": "Ullamco aute ea irure excepteur Lorem mollit aliqua et nisi irure cupidatat. Aliquip do irure nisi amet duis cupidatat reprehenderit labore non ipsum ut. Exercitation dolore proident veniam anim qui ipsum ea. Officia ullamco in excepteur deserunt proident culpa magna ex consequat id. Aliqua exercitation nulla excepteur irure elit nulla aliqua reprehenderit eiusmod veniam. Adipisicing esse laboris ad culpa quis mollit. Eu minim pariatur cupidatat occaecat fugiat laboris.",
+    "registered": "Tuesday, November 25, 2014 3:25 AM",
+    "latitude": "-4.614304",
+    "longitude": "142.184355",
+    "tags": [
+      "consectetur",
+      "dolore",
+      "Lorem",
+      "ut",
+      "est"
+    ],
+    "range": [
+      0,
+      1,
+      2,
+      3,
+      4,
+      5,
+      6,
+      7,
+      8,
+      9
+    ],
+    "friends": [
+      {
+        "id": 0,
+        "name": "Mccall Johnson"
+      },
+      {
+        "id": 1,
+        "name": "Sondra Short"
+      },
+      {
+        "id": 2,
+        "name": "Ashley Combs"
+      }
+    ],
+    "greeting": "Hello, Mcconnell! You have 9 unread messages.",
+    "favoriteFruit": "apple"
+  }
