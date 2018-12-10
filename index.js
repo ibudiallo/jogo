@@ -51,8 +51,9 @@ function showWelcome() {
 	console.log( "" );
 	console.log( "Here is an example of what will be produced:" );
 	var j = `{"hello":"world"}`;
-	console.log( "input: ", j);
-	console.log( "output: ");
+	console.log( "   node index.js sample.txt " );
+	console.log( "sample.txt: ", j );
+	console.log( "output: " );
 	console.log( "" );
 	var conv = Jogo.convert( "Auto", j );
 	for (var i = 0; i < conv.length; i++ ) {
