@@ -29,18 +29,18 @@ var isURL = false;
 var content = null;
 
 if ( filepath.indexOf( "http" ) !== -1 ) {
-	isURL = true;	
+	isURL = true;
 }
 
 if ( isURL ) {
 
 } else {
-	let fs = require( 'fs' );	
+	let fs = require( "fs" );
 	if ( !fs.existsSync( filepath ) ) {
 		console.log( "The path is incorrect: ", filepath );
 		return 1;
 	}
-	content = fs.readFileSync( filepath, 'utf8' );
+	content = fs.readFileSync( filepath, "utf8" );
 }
 try {
 	var isValidJSON = JSON.parse( content );
