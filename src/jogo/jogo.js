@@ -59,7 +59,11 @@ let Jogo = {
 	},
 
 	convertXML: function( varname, xmlStr ) {
-		return XML.convert( varname, xmlStr );
+		this.container = [];
+		let x = getXMLParser();
+		var obj = x.parseFromString( xmlStr, "text/xml" );
+		this.processXML( obj, varname );
+		return this.getContainers();
 	},
 
 	convertJSON: function( name, jsonStr ){
@@ -92,6 +96,17 @@ let Jogo = {
 		let total = this.addToContainer( name, strOut, hash );
 	},
 
+	processXML: function( obj, name ) {
+		let contentName = "Content-" + Math.random(),
+			strOut = ("type {} struct {" + this.opts.newLine + "{" + contentName + "}" + this.opts.newLine + "}" ).replace( "{}" , name ),
+			hash = this.getObjHash( obj );
+		let line1 = "XMLName xml.Name `xml:\"" + obj.children[ 0 ].nodeName + "\"`";
+		let data = this.processXMLObject( obj.children[ 0 ], name, 1 );
+		let resp = this.getTabs( 1 ) + line1 + this.opts.newLine + data.join( this.opts.newLine );
+		strOut = strOut.replace( "{" + contentName + "}", data.join( this.opts.newLine ) );
+		let total = this.addToContainer( name, strOut, hash );
+	},
+
 	processObject : function( obj, key, depth ) {
 		let content = [];
 		for ( let key in obj ) {
@@ -116,6 +131,56 @@ let Jogo = {
 				out = objOut.replace( objContentName, data.join( this.opts.newLine ) );
 				content.push( out );
 				continue;
+			}
+			out += this.getTabs( depth ) + keyName + " "+ type + " " + this.annotate( key );
+			content.push( out );
+		}
+		return content;
+	},
+
+	processXMLObject : function( obj, key, depth ) {
+		let content = [];
+		for ( let i = 0, l = obj.children.length; i < l; i++ ) {
+			let elem = obj.children[ i ];
+			let key = elem.nodeName;
+			let value = elem.textContent.trim();
+			let type = this.getXMLType( elem );
+			let out = "";
+			let keyName = this.formatName( key );
+			if ( type === "object" ) {
+				let objContentName = "Content-" + Math.random();
+				out = keyName + " struct {" + objContentName + "}";
+				let s = this.processXMLObject( elem, key, depth + 1 );
+				out = out.replace( objContentName, this.opts.newLine + s.join( "\n" ) + this.opts.newLine );
+				content.push( out );
+				continue;
+			}
+			if ( type === "interface{}" ) {
+				let tabs = this.getTabs( depth );
+				if ( this.isEmptyObj( elem ) ) {
+					content.push( this.getTabs( depth ) + keyName + " interface{} " + this.annotate( key ) );
+					continue;
+				}
+				let objContentName = "Content-" + Math.random();
+				let objOut = tabs + keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + tabs + "} " + this.annotate( key );
+				let data = this.processObject( elem, key, depth + 1 );
+				out = objOut.replace( objContentName, data.join( this.opts.newLine ) );
+				content.push( out );
+				continue;
+			}
+			if ( type === "attr" ) {
+				let objContentName = "Content-" + Math.random();
+				let out = keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "} " + this.annotate( key );
+				let res = [];
+				res.push( this.getTabs( depth + 1 ) + "Text string"  );
+				for ( let j = 0; j < elem.attributes.length; j++ ) {
+					let attr = elem.attributes[ j ];
+					let val = attr.value;
+					let k = attr.name;
+					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val )  );
+				}
+				out = out.replace( objContentName, res.join( this.opts.newLine ) );
+				content.push( out );
 			}
 			out += this.getTabs( depth ) + keyName + " "+ type + " " + this.annotate( key );
 			content.push( out );
@@ -188,6 +253,31 @@ let Jogo = {
 
 	getType: function( obj ) {
 		let t = typeof obj
+		switch( t ) {
+		case "string":
+			return "string";
+		case "number":
+			if ( obj === Math.floor( obj ) ) {
+				return "int"
+			}
+			return "float32";
+		case "boolean":
+			return "bool";
+		}
+		if ( this.isArray( obj ) ) {
+			return "array";
+		}
+		return "interface{}";
+	},
+
+	getXMLType: function( obj ) {
+		if ( obj.attributes.length ) {
+			return "attr";
+		}
+		if ( obj.children && obj.children.length ) {
+			return "object";
+		}
+		let t = typeof obj.textContent
 		switch( t ) {
 		case "string":
 			return "string";
@@ -331,20 +421,6 @@ let Jogo = {
 		return c;
 	},
 };
-
-var XML = {
-
-	convert: function( name, str ) {
-		let x = getXMLParser();
-		let obj = x.parseFromString( str, "text/xml" );
-		return this.process( obj );
-	},
-
-	process: function( obj ) {
-		// TODO continue;
-		return ["XML is not supported yet. Coming soon!"];
-	}
-}
 
 if ( typeof define === "function" && define.amd ) {
 	define( function() { return Jogo; } );
