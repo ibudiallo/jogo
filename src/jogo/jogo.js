@@ -46,20 +46,22 @@ let Jogo = {
 		} catch( e ) {
 			error = "error: " + e.message;
 		}
-		try {
-			let x = getXMLParser();
-			x.parseFromString( str, "text/xml" );
-			this.opts.mode = "xml";
-			return this.convertXML( name, str );
-		} catch( e ) {
-			error = "\n" + e.message;
+		let x = getXMLParser();
+		let err = x.parseFromString( str, "text/xml" );
+		let errmsg = this.isXMLError( err );
+		if ( errmsg ) {
+			console.log( errmsg );
+			return [ errmsg ];
 		}
-		console.log( "failed: ", error );
-		return [];
+		return this.convertXML( name, str );
 	},
 
 	convertXML: function( varname, xmlStr ) {
-		return XML.convert( varname, xmlStr );
+		this.container = [];
+		let x = getXMLParser();
+		var obj = x.parseFromString( xmlStr, "text/xml" );
+		this.processXML( obj, varname );
+		return this.getContainers();
 	},
 
 	convertJSON: function( name, jsonStr ){
@@ -92,6 +94,19 @@ let Jogo = {
 		let total = this.addToContainer( name, strOut, hash );
 	},
 
+	processXML: function( obj, name ) {
+		let contentName = "Content-" + Math.random(),
+			strOut = ("type {} struct {" + this.opts.newLine + "{" + contentName + "}" + this.opts.newLine + "}" ).replace( "{}" , name ),
+			hash = this.getObjHash( obj ),
+			data = [];
+		console.log(obj)
+		let line1 = [ this.getTabs( 1 ) + "XMLName xml.Name `xml:\"" + obj.children[ 0 ].nodeName + "\"`" ];
+		let outArray = this.processXMLObject( obj.children[ 0 ], name, 1 );
+		data = line1.concat( outArray );
+		strOut = strOut.replace( "{" + contentName + "}", data.join( this.opts.newLine ) );
+		let total = this.addToContainer( name, strOut, hash );
+	},
+
 	processObject : function( obj, key, depth ) {
 		let content = [];
 		for ( let key in obj ) {
@@ -119,6 +134,76 @@ let Jogo = {
 			}
 			out += this.getTabs( depth ) + keyName + " "+ type + " " + this.annotate( key );
 			content.push( out );
+		}
+		return content;
+	},
+
+	processXMLObject : function( obj, key, depth ) {
+		let content = [];
+		for ( let i = 0, l = obj.children.length; i < l; i++ ) {
+			let elem = obj.children[ i ];
+			let key = elem.nodeName;
+			let value = elem.textContent.trim();
+			let type = this.getXMLType( elem );
+			let out = "";
+			let keyName = this.formatName( key );
+			if ( type === "object" ) {
+				let objContentName = "Content-" + Math.random();
+				out = keyName + " struct {" + objContentName + "}";
+				let s = this.processXMLObject( elem, key, depth + 1 );
+				out = out.replace( objContentName, this.opts.newLine + s.join( "\n" ) + this.opts.newLine );
+				content.push( out );
+				continue;
+			}
+			if ( type === "attr" ) {
+				let objContentName = "Content-" + Math.random();
+				let out = keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "} " + this.annotateXML( key );
+				let res = [];
+				res.push( this.getTabs( depth + 1 ) + "Text string `xml:\",chardata\"`" );
+				for ( let j = 0; j < elem.attributes.length; j++ ) {
+					let attr = elem.attributes[ j ];
+					let val = attr.value;
+					let k = attr.name;
+					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val ) + " " + this.annotateXML( k, true ) );
+				}
+				out = out.replace( objContentName, res.join( this.opts.newLine ) );
+				content.push( out );
+				continue;
+			}
+			if ( type === "attrchild" ) {
+				let objContentName = "Content-" + Math.random();
+				let out = keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "} " + this.annotateXML( key );
+				let res = [];
+				res.push( this.getTabs( depth + 1 ) + "Text string `xml:\",chardata\"`" );
+				for ( let j = 0; j < elem.attributes.length; j++ ) {
+					let attr = elem.attributes[ j ];
+					let val = attr.value;
+					let k = attr.name;
+					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val ) + " " + this.annotateXML( k, true ) );
+				}
+				console.log(res)
+				let array = this.isXMLArray( elem )
+				if ( array ) {
+					let t = this.getXMLType( array )
+
+					let str = this.getTabs( depth ) + this.formatName( array.nodeName ) + " []" + t + " " + this.annotateXML( array.nodeName )
+					//let b = this.processXML( array, array.nodeName )
+					//console.log(b);
+					res.push( str )
+					out = out.replace( objContentName, res.join( "\n" ) );
+					content.push( out );
+					continue;
+				}
+				out = out.replace( objContentName, res.join( this.opts.newLine ) );
+				content.push( out );
+				continue;
+			}
+
+			out += this.getTabs( depth ) + keyName + " "+ type + " " + this.annotateXML( key );
+			content.push( out );
+		}
+		if ( content.length === 0 ) {
+			content.push( this.getTabs( depth ) + this.formatName( key ) + " "+ this.getXMLType( obj ) + " " + this.annotateXML( key ) );
 		}
 		return content;
 	},
@@ -205,6 +290,32 @@ let Jogo = {
 		return "interface{}";
 	},
 
+	getXMLType: function( obj ) {
+		if ( obj.attributes.length ) {
+			let c = obj.children.length ? "child" : ""
+			return "attr" + c;
+		}
+		if ( obj.children && obj.children.length ) {
+			return "object";
+		}
+		let t = typeof obj.textContent
+		switch( t ) {
+		case "string":
+			return "string";
+		case "number":
+			if ( obj === Math.floor( obj ) ) {
+				return "int"
+			}
+			return "float32";
+		case "boolean":
+			return "bool";
+		}
+		if ( this.isArray( obj ) ) {
+			return "array";
+		}
+		return "interface{}";
+	},
+
 	isArray: function( obj ) {
 		return Array.isArray( obj );
 	},
@@ -226,6 +337,15 @@ let Jogo = {
 		}
 		let omit = this.opts.omitempty? ",omitempty" : "";
 		return "`json:\"{}\"`".replace( "{}", name + omit );
+	},
+
+	annotateXML: function( name, attr ){
+		if ( !this.opts.annotation ) {
+			return "";
+		}
+		let omit = this.opts.omitempty ? ",omitempty" : "";
+		let out = name + ( attr ? ",attr" : "" ) + omit;
+		return "`xml:\"{}\"`".replace( "{}", out );
 	},
 
 	formatName: function( name ){
@@ -330,21 +450,27 @@ let Jogo = {
 		}
 		return c;
 	},
-};
 
-var XML = {
-
-	convert: function( name, str ) {
-		let x = getXMLParser();
-		let obj = x.parseFromString( str, "text/xml" );
-		return this.process( obj );
+	isXMLError: function( dom ) {
+		let error = false;
+		if ( dom && dom.body && dom.body.children.length ) {
+			let p = dom.body.children[ 0 ];
+			error = p.nodeName === "parsererror" ? p.textContent : false;
+		}
+		return error;
 	},
 
-	process: function( obj ) {
-		// TODO continue;
-		return ["XML is not supported yet. Coming soon!"];
+	isXMLArray: function ( elem ) {
+		let old = "";
+		for( let i = 0, l = elem.children.length; i < l; i++ ) {
+			if ( elem.children[ i ].nodeName === old ) {
+				return elem.children[ 0 ];
+			}
+			old = elem.children[ i ].nodeName;
+		}
+		return false;
 	}
-}
+};
 
 if ( typeof define === "function" && define.amd ) {
 	define( function() { return Jogo; } );

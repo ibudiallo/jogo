@@ -26,27 +26,17 @@ var sample = {
 	my_box: [[]]
 };
 
-/*
-var sample = {
-    "glossary": {
-        "title": "example glossary",
-		"GlossDiv": {
-            "title": "S",
-			"GlossList": {
-                "GlossEntry": {
-                    "ID": "SGML",
-					"SortAs": "SGML",
-					"GlossTerm": "Standard Generalized Markup Language",
-					"Acronym": "SGML",
-					"Abbrev": "ISO 8879:1986",
-					"GlossDef": {
-                        "para": "A meta-markup language, used to create markup languages such as DocBook.",
-						"GlossSeeAlso": ["GML", "XML"]
-                    },
-					"GlossSee": "markup"
-                }
-            }
-        }
-    }
-};
-//*/
+var xmlsample = `<plane>
+   <date>
+	<day>1</day>
+	<month>12</month>
+	<year>2009</year>
+   </date>
+   <make> Cessna </make>
+   <model id="name"> Skyhawk </model>
+   <colors type="list" id="124">
+     <color>Light</color>
+     <color>Black</color>
+     <color>Blue</color>
+   </colors>
+</plane>`;
