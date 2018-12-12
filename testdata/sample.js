@@ -26,11 +26,17 @@ var sample = {
 	my_box: [[]]
 };
 
-var xmlsample = `<!-- xslplane.1.xml -->
-<?xml-stylesheet type = "text/xsl"  href = "xslplane.1.xsl" ?>
-<plane>
-   <year> 1977 </year>
+var xmlsample = `<plane>
+   <date>
+	<day>1</day>
+	<month>12</month>
+	<year>2009</year>
+   </date>
    <make> Cessna </make>
-   <model> Skyhawk </model>
-   <color> Light blue and white </color>
+   <model id="name"> Skyhawk </model>
+   <colors type="list" id="124">
+     <color>Light</color>
+     <color>Black</color>
+     <color>Blue</color>
+   </colors>
 </plane>`;

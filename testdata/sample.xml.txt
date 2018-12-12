@@ -2,8 +2,8 @@
 <!-- xslplane.1.xml -->
 <?xml-stylesheet type = "text/xsl"  href = "xslplane.1.xsl" ?>
 <plane>
-   <year> 1977 </year>
+   <date> <day>1</day><month>12</month><year>2009</year></date>
    <make> Cessna </make>
    <model> Skyhawk </model>
-   <color> Light blue and white </color>
+   <color type="list" id="124"> Light blue and white </color>
 </plane>

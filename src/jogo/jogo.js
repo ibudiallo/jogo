@@ -46,16 +46,14 @@ let Jogo = {
 		} catch( e ) {
 			error = "error: " + e.message;
 		}
-		try {
-			let x = getXMLParser();
-			x.parseFromString( str, "text/xml" );
-			this.opts.mode = "xml";
-			return this.convertXML( name, str );
-		} catch( e ) {
-			error = "\n" + e.message;
+		let x = getXMLParser();
+		let err = x.parseFromString( str, "text/xml" );
+		let errmsg = this.isXMLError( err );
+		if ( errmsg ) {
+			console.log( errmsg );
+			return [ errmsg ];
 		}
-		console.log( "failed: ", error );
-		return [];
+		return this.convertXML( name, str );
 	},
 
 	convertXML: function( varname, xmlStr ) {
@@ -99,10 +97,12 @@ let Jogo = {
 	processXML: function( obj, name ) {
 		let contentName = "Content-" + Math.random(),
 			strOut = ("type {} struct {" + this.opts.newLine + "{" + contentName + "}" + this.opts.newLine + "}" ).replace( "{}" , name ),
-			hash = this.getObjHash( obj );
-		let line1 = "XMLName xml.Name `xml:\"" + obj.children[ 0 ].nodeName + "\"`";
-		let data = this.processXMLObject( obj.children[ 0 ], name, 1 );
-		let resp = this.getTabs( 1 ) + line1 + this.opts.newLine + data.join( this.opts.newLine );
+			hash = this.getObjHash( obj ),
+			data = [];
+		console.log(obj)
+		let line1 = [ this.getTabs( 1 ) + "XMLName xml.Name `xml:\"" + obj.children[ 0 ].nodeName + "\"`" ];
+		let outArray = this.processXMLObject( obj.children[ 0 ], name, 1 );
+		data = line1.concat( outArray );
 		strOut = strOut.replace( "{" + contentName + "}", data.join( this.opts.newLine ) );
 		let total = this.addToContainer( name, strOut, hash );
 	},
@@ -155,35 +155,55 @@ let Jogo = {
 				content.push( out );
 				continue;
 			}
-			if ( type === "interface{}" ) {
-				let tabs = this.getTabs( depth );
-				if ( this.isEmptyObj( elem ) ) {
-					content.push( this.getTabs( depth ) + keyName + " interface{} " + this.annotate( key ) );
-					continue;
-				}
-				let objContentName = "Content-" + Math.random();
-				let objOut = tabs + keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + tabs + "} " + this.annotate( key );
-				let data = this.processObject( elem, key, depth + 1 );
-				out = objOut.replace( objContentName, data.join( this.opts.newLine ) );
-				content.push( out );
-				continue;
-			}
 			if ( type === "attr" ) {
 				let objContentName = "Content-" + Math.random();
-				let out = keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "} " + this.annotate( key );
+				let out = keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "} " + this.annotateXML( key );
 				let res = [];
-				res.push( this.getTabs( depth + 1 ) + "Text string"  );
+				res.push( this.getTabs( depth + 1 ) + "Text string `xml:\",chardata\"`" );
 				for ( let j = 0; j < elem.attributes.length; j++ ) {
 					let attr = elem.attributes[ j ];
 					let val = attr.value;
 					let k = attr.name;
-					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val )  );
+					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val ) + " " + this.annotateXML( k, true ) );
 				}
 				out = out.replace( objContentName, res.join( this.opts.newLine ) );
 				content.push( out );
+				continue;
 			}
-			out += this.getTabs( depth ) + keyName + " "+ type + " " + this.annotate( key );
+			if ( type === "attrchild" ) {
+				let objContentName = "Content-" + Math.random();
+				let out = keyName + " struct {" + this.opts.newLine + objContentName + this.opts.newLine + "} " + this.annotateXML( key );
+				let res = [];
+				res.push( this.getTabs( depth + 1 ) + "Text string `xml:\",chardata\"`" );
+				for ( let j = 0; j < elem.attributes.length; j++ ) {
+					let attr = elem.attributes[ j ];
+					let val = attr.value;
+					let k = attr.name;
+					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val ) + " " + this.annotateXML( k, true ) );
+				}
+				console.log(res)
+				let array = this.isXMLArray( elem )
+				if ( array ) {
+					let t = this.getXMLType( array )
+
+					let str = this.getTabs( depth ) + this.formatName( array.nodeName ) + " []" + t + " " + this.annotateXML( array.nodeName )
+					//let b = this.processXML( array, array.nodeName )
+					//console.log(b);
+					res.push( str )
+					out = out.replace( objContentName, res.join( "\n" ) );
+					content.push( out );
+					continue;
+				}
+				out = out.replace( objContentName, res.join( this.opts.newLine ) );
+				content.push( out );
+				continue;
+			}
+
+			out += this.getTabs( depth ) + keyName + " "+ type + " " + this.annotateXML( key );
 			content.push( out );
+		}
+		if ( content.length === 0 ) {
+			content.push( this.getTabs( depth ) + this.formatName( key ) + " "+ this.getXMLType( obj ) + " " + this.annotateXML( key ) );
 		}
 		return content;
 	},
@@ -272,7 +292,8 @@ let Jogo = {
 
 	getXMLType: function( obj ) {
 		if ( obj.attributes.length ) {
-			return "attr";
+			let c = obj.children.length ? "child" : ""
+			return "attr" + c;
 		}
 		if ( obj.children && obj.children.length ) {
 			return "object";
@@ -316,6 +337,15 @@ let Jogo = {
 		}
 		let omit = this.opts.omitempty? ",omitempty" : "";
 		return "`json:\"{}\"`".replace( "{}", name + omit );
+	},
+
+	annotateXML: function( name, attr ){
+		if ( !this.opts.annotation ) {
+			return "";
+		}
+		let omit = this.opts.omitempty ? ",omitempty" : "";
+		let out = name + ( attr ? ",attr" : "" ) + omit;
+		return "`xml:\"{}\"`".replace( "{}", out );
 	},
 
 	formatName: function( name ){
@@ -420,6 +450,26 @@ let Jogo = {
 		}
 		return c;
 	},
+
+	isXMLError: function( dom ) {
+		let error = false;
+		if ( dom && dom.body && dom.body.children.length ) {
+			let p = dom.body.children[ 0 ];
+			error = p.nodeName === "parsererror" ? p.textContent : false;
+		}
+		return error;
+	},
+
+	isXMLArray: function ( elem ) {
+		let old = "";
+		for( let i = 0, l = elem.children.length; i < l; i++ ) {
+			if ( elem.children[ i ].nodeName === old ) {
+				return elem.children[ 0 ];
+			}
+			old = elem.children[ i ].nodeName;
+		}
+		return false;
+	}
 };
 
 if ( typeof define === "function" && define.amd ) {

@@ -63,9 +63,11 @@ var Render = {
 		Jogo.opts = {
 			tabChar: this.form.tabs.value === "tab" ? "\t" : "    ",
 			annotation: this.form.annotation.checked,
-			omitempty: this.form.omitempty.checked
+			omitempty: this.form.omitempty.checked,
+			newLine: "\n"
 		};
 		this.tabChar = Jogo.opts.tabChar;
+		console.log(Jogo.opts);
 		this.update();
 	},
 
