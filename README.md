@@ -14,3 +14,8 @@ Clone the repo then run `index.js` with the json file as a parameter.
 
 Clone the repo then open the file `test/index.html` on your browser. Paste your json content on the left side and click on convert. The result should appear on the right side.
 
+## TODO
+
+- add nodejs support (done)
+- add xml support on browser (done)
+- add xml support on node (pending)
