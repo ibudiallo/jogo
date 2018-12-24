@@ -99,7 +99,6 @@ let Jogo = {
 			strOut = ("type {} struct {" + this.opts.newLine + "{" + contentName + "}" + this.opts.newLine + "}" ).replace( "{}" , name ),
 			hash = this.getObjHash( obj ),
 			data = [];
-		console.log(obj)
 		let line1 = [ this.getTabs( 1 ) + "XMLName xml.Name `xml:\"" + obj.children[ 0 ].nodeName + "\"`" ];
 		let outArray = this.processXMLObject( obj.children[ 0 ], name, 1 );
 		data = line1.concat( outArray );
@@ -140,6 +139,14 @@ let Jogo = {
 
 	processXMLObject : function( obj, key, depth ) {
 		let content = [];
+		let isObjArray = this.isXMLArray( obj );
+		if ( isObjArray ) {
+			let thename = "Content-" + Math.random();
+			let pOut = this.processXMLObject( isObjArray, key, depth );
+			let out = "";
+			let total = this.addToContainer( this.formatName( key), pOut, 123 );
+			return [];
+		}
 		for ( let i = 0, l = obj.children.length; i < l; i++ ) {
 			let elem = obj.children[ i ];
 			let key = elem.nodeName;
@@ -151,7 +158,7 @@ let Jogo = {
 				let objContentName = "Content-" + Math.random();
 				out = keyName + " struct {" + objContentName + "}";
 				let s = this.processXMLObject( elem, key, depth + 1 );
-				out = out.replace( objContentName, this.opts.newLine + s.join( "\n" ) + this.opts.newLine );
+				out = out.replace( objContentName, this.opts.newLine + s.join( this.opts.newLine ) + this.opts.newLine );
 				content.push( out );
 				continue;
 			}
@@ -181,16 +188,14 @@ let Jogo = {
 					let k = attr.name;
 					res.push( this.getTabs( depth + 1 ) + this.formatName ( k ) + " " + this.getType( val ) + " " + this.annotateXML( k, true ) );
 				}
-				console.log(res)
 				let array = this.isXMLArray( elem )
 				if ( array ) {
 					let t = this.getXMLType( array )
-
 					let str = this.getTabs( depth ) + this.formatName( array.nodeName ) + " []" + t + " " + this.annotateXML( array.nodeName )
 					//let b = this.processXML( array, array.nodeName )
 					//console.log(b);
 					res.push( str )
-					out = out.replace( objContentName, res.join( "\n" ) );
+					out = out.replace( objContentName, res.join( this.opts.newLine ) );
 					content.push( out );
 					continue;
 				}
