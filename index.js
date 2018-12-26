@@ -1,5 +1,5 @@
 var http = require( "http" );
-var Jogo = require( "./src/jogo/jogo" );
+var Jogo = require( "./src/js/jogo/jogo" );
 
 function download( file ) {
 	http.get( file, function( res) {

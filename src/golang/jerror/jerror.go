@@ -13,7 +13,7 @@ func Wrap(err error, str string) error {
 		return nil
 	}
 	e := &Error{
-		ErrString: str + err.Error(),
+		ErrString: str + " -> " + err.Error(),
 	}
 	return e
 }

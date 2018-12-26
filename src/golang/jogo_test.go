@@ -7,9 +7,9 @@ import (
 )
 
 var data = map[string]string{
-	"json": "../testdata/sample.json.txt",
-	"xml":  "../testdata/sample.xml.txt",
-	"txt":  "../testdata/sample.txt",
+	"json": "../../testdata/sample.json.txt",
+	"xml":  "../../testdata/sample.xml.txt",
+	"txt":  "../../testdata/sample.txt",
 }
 
 func init() {
