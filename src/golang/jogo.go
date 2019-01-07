@@ -148,7 +148,11 @@ func (j *Jogo) jprocessLine(key string, value interface{}, depth int) string {
 			face := val.Index(0).Interface()
 			v := face.(map[string]interface{})
 			sing := singular(name)
+			if len(v) == 0 {
+				return name + " []interface{} " + annot
+			}
 			_ = j.jprocessMap(key, v, depth+1)
+			fmt.Printf("hey %+v\n", v)
 			return name + " []" + sing + " " + annot
 		}
 		return name + " interface{}" + " " + annot
@@ -161,7 +165,7 @@ func (j *Jogo) jprocessLine(key string, value interface{}, depth int) string {
 func (j *Jogo) jprocessMap(key string, m map[string]interface{}, depth int) string {
 	name := formatName(key)
 	uniq := getUniqueName()
-	out := "type " + name + " struct {\n" + uniq + "\n}"
+	out := "type " + singular(name) + " struct {\n" + uniq + "\n}"
 	var o []string
 	for k, v := range m {
 		mAnnot := getAnnotations(k, "json", true)

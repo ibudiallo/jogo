@@ -7,8 +7,8 @@ import (
 )
 
 var data = map[string]string{
-	"json": "../../testdata/sample.json.txt",
-	"xml":  "../../testdata/sample.xml.txt",
+	"json": "../../testdata/sample.json",
+	"xml":  "../../testdata/sample.xml",
 	"txt":  "../../testdata/sample.txt",
 }
 
@@ -34,6 +34,7 @@ func TestJSON(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
+	j.Print()
 }
 
 func TestXML(t *testing.T) {

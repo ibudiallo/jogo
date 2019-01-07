@@ -22,8 +22,6 @@ var Render = {
 		this.convBtn = document.getElementById( "convBtn" );
 		this.optionBtn = document.getElementById( "option-btn" );
 		this.textField.value = JSON.stringify( sample, null,"  " );
-		// TODO remove
-		this.textField.value = xmlsample;
 		this.convBtn.onclick = function() {
 			Render.update();
 		};
